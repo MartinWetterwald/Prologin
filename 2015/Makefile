@@ -40,7 +40,7 @@ $(TESTDIR)*.in:
 		echo "Missing output file <$$fileOut>"; \
 	else \
 		$$EXE < $$fileIn > tmp; \
-		diff -q $$fileOut tmp > /dev/null; \
+		diff -qw $$fileOut tmp > /dev/null; \
 		if [ $$? -eq 0 ]; then \
 			echo "SUCCESSFUL"; \
 		else \
