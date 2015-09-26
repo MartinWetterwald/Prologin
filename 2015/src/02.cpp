@@ -28,6 +28,7 @@ int main ( )
     }
     course_elephants0 ( n, l, v, p );
 
-    delete p, n;
+    delete p;
+    delete v;
     return 0;
 }
