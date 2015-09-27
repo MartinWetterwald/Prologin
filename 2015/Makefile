@@ -1,4 +1,4 @@
-MAKEFLAGS += --no-print-directory
+MAKEFLAGS += --no-print-directory -s
 
 SRCDIR = src/
 BINDIR = bin/
@@ -8,10 +8,10 @@ CPPFLAGS = -std=c++11 -Wall -Wextra -Werror -g3 -O0
 
 SRC = $(wildcard $(SRCDIR)*.cpp)
 EXES = $(addprefix $(BINDIR), $(notdir $(SRC:%.cpp=%)))
-TESTFAMILIES = $(addprefix $(TESTDIR), $(notdir $(SRC:%.cpp=%)))
 TESTSIN = $(wildcard $(TESTDIR)*.in)
+TESTRESULTFILE = $(TESTDIR)results.res
 
-.PHONY: default all mrproper test $(TESTFAMILIES) $(TESTSIN)
+.PHONY: default all mrproper _test test
 
 default: $(EXES)
 
@@ -25,26 +25,34 @@ all: mrproper default
 mrproper:
 	@rm -rf $(BINDIR)
 
-test: $(EXES) $(TESTFAMILIES)
+test: $(EXES) _test
 
-$(TESTFAMILIES): $(TESTDIR)%: $(BINDIR)%
-	@$(MAKE) $@*.in
+_test: $(TESTSIN)
+	@echo "Launching tests..."
+	@$(foreach test,$^,$(call launchtest,$(test),$(notdir $(test:.in=))))
+	@cat $(TESTRESULTFILE)
+	@if [ `grep -c -E 'FAILED' $(TESTRESULTFILE)` -eq 0 ]; then echo "\n\033[1;37m\033[42mAll tests PASSED!\033[0m"; \
+		else echo "\n\033[1;37m\033[41mSome tests FAILED!\033[0m"; rm -f $(TESTRESULTFILE); false; fi;
+	@rm -f $(TESTRESULTFILE)
 
-$(TESTDIR)*.in:
-	@EXE=$(addprefix $(BINDIR), $(notdir $@)) ; \
-	EXE=$${EXE%_*.in} ;\
-	$(MAKE) -s $$EXE; \
-	fileIn=$@; fileOut=$${fileIn%.in}.out; \
-	printf "%-13s %-35s" "Testing" "<$@>..."; \
-	if [ ! -f $$fileOut ] || [ ! -r $$fileOut ]; then \
-		echo "Missing output file <$$fileOut>"; \
-	else \
-		$$EXE < $$fileIn > tmp; \
-		diff -qw $$fileOut tmp > /dev/null; \
-		if [ $$? -eq 0 ]; then \
-			echo "SUCCESSFUL"; \
+define launchtest
+	exe=$1; \
+	exe=$${exe%_*}; \
+	exe=$${exe##*/}; \
+	exe=$(addprefix $(BINDIR), $$exe); \
+	if [ -f $$exe ] && [ -x $$exe ]; then \
+		fileOut=$(1:.in=.out); \
+		if [ ! -f $$fileOut ] || [ ! -r $$fileOut ]; then \
+			echo "Missing output file <$$fileOut>" >> $(TESTRESULTFILE); \
 		else \
-			echo "FAILED"; \
+			$$exe < $1 > tmp; \
+			diff -qw $$fileOut tmp > /dev/null; \
+			if [ $$? -eq 0 ]; then \
+				echo "\033[32mTest $2 PASSED\033[0m" >> $(TESTRESULTFILE); \
+			else \
+				echo "\033[1;31mTest $2 FAILED\033[0m" >> $(TESTRESULTFILE); \
+			fi; \
+			rm -f tmp; \
 		fi; \
-		rm -f tmp; \
 	fi;
+endef
