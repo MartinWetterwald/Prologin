@@ -1,9 +1,9 @@
 #include <iostream>
-#include <vector>
+#include <cstring>
 
-std::vector <char> * getline ( )
+char * getline ( )
 {
-    if (std::cin.flags ( ) & std::ios_base::skipws )
+    if ( std::cin.flags ( ) & std::ios_base::skipws )
     {
         char c = std::cin.peek ( );
         if ( c == '\n' || c == ' ' )
@@ -14,24 +14,25 @@ std::vector <char> * getline ( )
     }
     std::string line;
     std::getline ( std::cin, line );
-    std::vector <char> * c = new std::vector <char> ( line.begin ( ), line.end ( ) );
+    char * c = new char [ line.length ( ) + 1 ];
+    strcpy ( c, line.c_str ( ) );
     return c;
 }
 
-void censor ( int n, std::vector <char> * str, int m, std::vector <int> * positions )
+void censor ( int n, char * str, int m, int * positions )
 {
     int word = 1;
-    for ( int i = 0, j = 0 ; j < n ; ++j )
+    for ( int i = 0, j = 0 ; j < n && str [ j ] != '\0' ; ++j )
     {
         if ( i >= m )
         {
-            std::cout << str -> at ( j );
+            std::cout << str [ j ];
             continue;
         }
 
-        if ( word == positions -> at ( i ) )
+        if ( word == positions [ i ] )
         {
-            if ( str -> at ( j ) != ' ' )
+            if ( str [ j ] != ' ' )
             {
                 std::cout << "*";
                 continue;
@@ -39,11 +40,11 @@ void censor ( int n, std::vector <char> * str, int m, std::vector <int> * positi
 
             ++i;
         }
-        if ( str -> at ( j ) == ' ' )
+        if ( str [ j ] == ' ' )
         {
             ++word;
         }
-        std::cout << str -> at ( j );
+        std::cout << str [ j ];
     }
 }
 
@@ -52,17 +53,17 @@ int main ( )
 {
     int m, n;
     std::cin >> n >> std::skipws;
-    std::vector <char> * str = getline ( );
+    char * str = getline ( );
     std::cin >> m >> std::skipws;
-    std::vector <int> * positions = new std::vector <int> ( m );
+    int * positions = new int [ m ];
 
     for ( int p = 0 ; p < m; ++p )
     {
-        std::cin >> positions -> at ( p ) >> std::skipws;
+        std::cin >> positions [ p ] >> std::skipws;
     }
     censor ( n, str, m, positions );
 
-    delete positions;
-    delete str;
+    delete [ ] positions;
+    delete [ ] str;
     return 0;
 }
