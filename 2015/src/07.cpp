@@ -7,59 +7,62 @@ typedef std::pair <int, int> Node;
 typedef std::multimap <int, Node> NodeMap;
 typedef std::set <Node> NodeSet;
 
-int flow ( int n, int * * tab )
+int flow ( int n, int * * graph )
 {
-    NodeMap * nodeMap = new NodeMap ( );
+    NodeMap * neighboursMap = new NodeMap ( );
     NodeSet * nodeSet = new NodeSet ( );
-    int * * res = new int * [ n ];
+    int * * dst = new int * [ n ];
     for ( int i = 0 ; i < n ; ++i )
     {
-        int * res2 = new int [ i + 1 ];
+        int * dst2 = new int [ i + 1 ];
         for ( int j = 0 ; j < i + 1 ; ++j )
         {
-            res2 [ j ] = -1;
+            dst2 [ j ] = -1;
         }
-        res [ i ] = res2;
+        dst [ i ] = dst2;
     }
 
-    res [ 0 ] [ 0 ] = tab [ 0 ] [ 0 ];
+    nodeSet -> insert ( std::make_pair ( 0, 0 ) );
+    dst [ 0 ] [ 0 ] = graph [ 0 ] [ 0 ];
     int storey = 0;
-    int id = 0;
+    int column = 0;
 
-    int nodeNumber = n * ( n + 1 ) / 2;
-    int nb = 1;
+    unsigned int nodeNumber = n * ( n + 1 ) / 2;
+    unsigned int nb = 1;
     while ( nb < nodeNumber )
     {
-        // If not last storey and we haven't inserted the child before
+        // If not last storey
         if ( storey < n - 1 )
         {
             // We add the children in the neighbors.
             int childStorey = storey + 1;
-            int leftChildId = id;
-            int rightChildId = id + 1;
+            int leftChildcolumn = column;
+            int rightChildcolumn = column + 1;
             // We check we haven't already inserted the child before
-            if ( nodeSet -> find ( std::make_pair ( childStorey, leftChildId ) ) == nodeSet -> end ( ) )
+            if ( nodeSet -> find ( std::make_pair ( childStorey, leftChildcolumn ) ) == nodeSet -> end ( ) )
             {
-                nodeSet -> insert ( std::make_pair ( childStorey, leftChildId ) );
-                nodeMap -> insert ( std::make_pair ( res [ storey ] [ id ] + tab [ childStorey ] [ leftChildId ], std::make_pair ( childStorey, leftChildId ) ) );
+                nodeSet -> insert ( std::make_pair ( childStorey, leftChildcolumn ) );
+                neighboursMap -> insert ( std::make_pair ( dst [ storey ] [ column ] + graph [ childStorey ] [ leftChildcolumn ], std::make_pair ( childStorey, leftChildcolumn ) ) );
             }
-            if ( nodeSet -> find ( std::make_pair ( childStorey, rightChildId ) ) == nodeSet -> end ( ) )
+            if ( nodeSet -> find ( std::make_pair ( childStorey, rightChildcolumn ) ) == nodeSet -> end ( ) )
             {
-                nodeSet -> insert ( std::make_pair ( childStorey, rightChildId ) );
-                nodeMap -> insert ( std::make_pair ( res [ storey ] [ id ] + tab [ childStorey ] [ rightChildId ], std::make_pair ( childStorey, rightChildId ) ) );
+                nodeSet -> insert ( std::make_pair ( childStorey, rightChildcolumn ) );
+                neighboursMap -> insert ( std::make_pair ( dst [ storey ] [ column ] + graph [ childStorey ] [ rightChildcolumn ], std::make_pair ( childStorey, rightChildcolumn ) ) );
             }
         }
 
         // Pops up neighbor with smallest cost
-        NodeMap::const_iterator it = nodeMap -> begin ( );
+        NodeMap::const_iterator it = neighboursMap -> begin ( );
+
+        // Changes current node for next iteration
         storey = it -> second.first;
-        id = it -> second.second;
-        if ( res [ storey ] [ id ] == -1 )
-        {
-            res [ storey ] [ id ] = it -> first;
-        }
+        column = it -> second.second;
+
+        // Updates the distance matrix
+        dst [ storey ] [ column ] = it -> first;
+
+        neighboursMap -> erase ( it );
         ++nb;
-        nodeMap -> erase ( it );
     }
 
     // We find out the max distance
@@ -68,9 +71,9 @@ int flow ( int n, int * * tab )
     {
         for ( int j = 0 ; j < i + 1 ; ++j )
         {
-            if ( res [ i ] [ j ] > max )
+            if ( dst [ i ] [ j ] > max )
             {
-                max = res [ i ] [ j ];
+                max = dst [ i ] [ j ];
             }
         }
     }
@@ -84,7 +87,7 @@ int main ( )
     int n;
     std::cin >> n >> std::skipws;
 
-    int * * tab = new int * [ n ];
+    int * * graph = new int * [ n ];
 
     for ( int i = 0 ; i < n ; i++ )
     {
@@ -93,8 +96,8 @@ int main ( )
         {
             std::cin >> o [ p ] >> std::skipws;
         }
-        tab [ i ] = o;
+        graph [ i ] = o;
     }
-    std::cout << flow ( n, tab );
+    std::cout << flow ( n, graph );
     return 0;
 }
