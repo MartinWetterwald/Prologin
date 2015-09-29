@@ -7,6 +7,16 @@ typedef std::pair <int, int> Node;
 typedef std::multimap <int, Node> NodeMap;
 typedef std::set <Node> NodeSet;
 
+void addNeighbour ( NodeMap * neighboursMap, NodeSet * nodeSet, int storey, int column, int dst )
+{
+    // We check we haven't already inserted the child before
+    if ( nodeSet -> find ( std::make_pair ( storey, column ) ) == nodeSet -> end ( ) )
+    {
+        nodeSet -> insert ( std::make_pair ( storey, column ) );
+        neighboursMap -> insert ( std::make_pair ( dst, std::make_pair ( storey, column ) ) );
+    }
+}
+
 int flow ( int n, int * * graph )
 {
     NodeMap * neighboursMap = new NodeMap ( );
@@ -36,19 +46,10 @@ int flow ( int n, int * * graph )
         {
             // We add the children in the neighbors.
             int childStorey = storey + 1;
-            int leftChildcolumn = column;
-            int rightChildcolumn = column + 1;
-            // We check we haven't already inserted the child before
-            if ( nodeSet -> find ( std::make_pair ( childStorey, leftChildcolumn ) ) == nodeSet -> end ( ) )
-            {
-                nodeSet -> insert ( std::make_pair ( childStorey, leftChildcolumn ) );
-                neighboursMap -> insert ( std::make_pair ( dst [ storey ] [ column ] + graph [ childStorey ] [ leftChildcolumn ], std::make_pair ( childStorey, leftChildcolumn ) ) );
-            }
-            if ( nodeSet -> find ( std::make_pair ( childStorey, rightChildcolumn ) ) == nodeSet -> end ( ) )
-            {
-                nodeSet -> insert ( std::make_pair ( childStorey, rightChildcolumn ) );
-                neighboursMap -> insert ( std::make_pair ( dst [ storey ] [ column ] + graph [ childStorey ] [ rightChildcolumn ], std::make_pair ( childStorey, rightChildcolumn ) ) );
-            }
+            int leftChildColumn = column;
+            int rightChildColumn = column + 1;
+            addNeighbour ( neighboursMap, nodeSet, childStorey, leftChildColumn, dst [ storey ] [ column ] + graph [ childStorey ] [ leftChildColumn ] );
+            addNeighbour ( neighboursMap, nodeSet, childStorey, rightChildColumn, dst [ storey ] [ column ] + graph [ childStorey ] [ rightChildColumn ] );
         }
 
         // Pops up neighbor with smallest cost
