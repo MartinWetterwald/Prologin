@@ -66,19 +66,15 @@ int flow ( int n, int * * graph )
         ++nb;
     }
 
-    // We find out the max distance
+    // We find out the max distance (within the nodes of the last storey)
     int max = 0;
     for ( int i = 0 ; i < n ; ++i )
     {
-        for ( int j = 0 ; j < i + 1 ; ++j )
+        if ( dst [ n - 1 ] [ i ] > max )
         {
-            if ( dst [ i ] [ j ] > max )
-            {
-                max = dst [ i ] [ j ];
-            }
+            max = dst [ n - 1 ] [ i ];
         }
     }
-
     return max;
 }
 
