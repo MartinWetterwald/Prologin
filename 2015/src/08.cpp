@@ -85,5 +85,14 @@ int main ( )
 
     std::cout << liberties ( matrix, visited, height, width, y, x, color );
 
+    delete visited;
+
+    for ( int i = 0 ; i < height ; ++i )
+    {
+        delete [ ] matrix [ i ];
+    }
+
+    delete [ ] matrix;
+
     return EXIT_SUCCESS;
 }
