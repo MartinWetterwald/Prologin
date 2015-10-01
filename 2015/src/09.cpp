@@ -1,29 +1,40 @@
 #include <iostream>
-#include <map>
+#include <set>
 
 typedef std::pair <short, short> Point;
-typedef std::map <Point, char> Matrix;
+typedef std::set <Point> PointSet;
 
-int terrain ( Matrix * matrix, int y, int x, int altitude )
+int terrain ( int * * matrix, int height, int width, int y, int x, int altitude, PointSet * toVisit )
 {
-    Matrix::iterator it = matrix -> find ( std::make_pair ( y, x ) );
-    if ( it == matrix -> end ( ) )
+    if ( x < 0 || x >= width || y < 0 || y >= height )
     {
         return 0;
     }
 
-    if ( it -> second != altitude )
+    if ( matrix [ y ] [ x ] == -1 )
     {
         return 0;
     }
 
-    matrix -> erase ( it );
+    if ( matrix [ y ] [ x ] != altitude )
+    {
+        toVisit -> insert ( std::make_pair ( y, x ) );
+        return 0;
+    }
+
+    PointSet::iterator it = toVisit -> find ( std::make_pair ( y, x ) );
+    if ( it != toVisit -> end ( ) )
+    {
+        toVisit -> erase ( it );
+    }
+
+    matrix [ y ] [ x ] = -1;
 
     return 1 +
-        terrain ( matrix, y, x - 1, altitude ) +
-        terrain ( matrix, y, x + 1, altitude ) +
-        terrain ( matrix, y - 1, x, altitude ) +
-        terrain ( matrix, y + 1, x, altitude );
+        terrain ( matrix, height, width, y, x - 1, altitude, toVisit ) +
+        terrain ( matrix, height, width, y, x + 1, altitude, toVisit ) +
+        terrain ( matrix, height, width, y - 1, x, altitude, toVisit ) +
+        terrain ( matrix, height, width, y + 1, x, altitude, toVisit );
 }
 
 int main ( )
@@ -32,24 +43,27 @@ int main ( )
     std::cin >> height >> std::skipws;
     std::cin >> width >> std::skipws;
 
-    Matrix * matrix = new Matrix ( );
+    PointSet * toVisit = new PointSet ( );
 
+    int * * matrix = new int * [ height ];
     for ( int i = 0 ; i < height ; ++i )
     {
+        int * line = new int [ width ];
         for ( int j = 0 ; j < width; ++j )
         {
-            int altitude;
-            std::cin >> altitude >> std::skipws;
-            matrix -> insert ( std::make_pair ( std::make_pair ( i, j ), altitude ) );
+            std::cin >> line [ j ] >> std::skipws;
         }
+        matrix [ i ] = line;
     }
 
     // Kepp the maximum of all chains and relaunch until we visited all points.
     int max = 0;
-    while ( matrix -> size ( ) > 0 )
+    while ( max == 0 || toVisit -> size ( ) > 0 )
     {
-        Matrix::iterator it = matrix -> begin ( );
-        int value = terrain ( matrix, it -> first.first, it -> first.second, it -> second );
+        PointSet::const_iterator it = toVisit -> begin ( );
+
+        int value = terrain ( matrix, height, width, it -> first, it -> second, matrix [ it -> first ] [ it -> second ], toVisit );
+
         if ( value > max )
         {
             max = value;
@@ -58,7 +72,14 @@ int main ( )
 
     std::cout << max;
 
-    delete matrix;
+    delete toVisit;
+
+    for ( int i = 0 ; i < height ; ++i )
+    {
+        delete [ ] matrix [ i ];
+    }
+
+    delete [ ] matrix;
 
     return EXIT_SUCCESS;
 }
