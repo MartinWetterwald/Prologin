@@ -1,8 +1,29 @@
 #include <iostream>
+#include <map>
 
-int terrain ( int * * matrix, int height, int width )
+typedef std::pair <short, short> Point;
+typedef std::map <Point, char> Matrix;
+
+int terrain ( Matrix * matrix, int y, int x, int altitude )
 {
-    return 0;
+    Matrix::iterator it = matrix -> find ( std::make_pair ( y, x ) );
+    if ( it == matrix -> end ( ) )
+    {
+        return 0;
+    }
+
+    if ( it -> second != altitude )
+    {
+        return 0;
+    }
+
+    matrix -> erase ( it );
+
+    return 1 +
+        terrain ( matrix, y, x - 1, altitude ) +
+        terrain ( matrix, y, x + 1, altitude ) +
+        terrain ( matrix, y - 1, x, altitude ) +
+        terrain ( matrix, y + 1, x, altitude );
 }
 
 int main ( )
@@ -11,25 +32,33 @@ int main ( )
     std::cin >> height >> std::skipws;
     std::cin >> width >> std::skipws;
 
-    int * * matrix = new int * [ height ];
-    for ( int * * i = matrix ; i < matrix + height ; ++i )
-    {
-        int * line = new int [ width ];
-        for ( int * j = line ; j < line + width; ++j )
-        {
-            std::cin >> * j >> std::skipws;
-        }
-        * i = line;
-    }
-
-    std::cout << terrain ( matrix, height, width );
+    Matrix * matrix = new Matrix ( );
 
     for ( int i = 0 ; i < height ; ++i )
     {
-        delete [ ] matrix [ i ];
+        for ( int j = 0 ; j < width; ++j )
+        {
+            int altitude;
+            std::cin >> altitude >> std::skipws;
+            matrix -> insert ( std::make_pair ( std::make_pair ( i, j ), altitude ) );
+        }
     }
 
-    delete [ ] matrix;
+    // Kepp the maximum of all chains and relaunch until we visited all points.
+    int max = 0;
+    while ( matrix -> size ( ) > 0 )
+    {
+        Matrix::iterator it = matrix -> begin ( );
+        int value = terrain ( matrix, it -> first.first, it -> first.second, it -> second );
+        if ( value > max )
+        {
+            max = value;
+        }
+    }
+
+    std::cout << max;
+
+    delete matrix;
 
     return EXIT_SUCCESS;
 }
