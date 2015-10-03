@@ -32,10 +32,10 @@ int main ( )
     StepList * recipe = new StepList [ n ];
 
     bool * root = new bool [ n ];
+    std::fill ( root, root + n, true );
 
     for ( short i = 0 ; i < n ; ++i )
     {
-        root [ i ] = true;
         int m;
         std::cin >> m;
         StepList steps ( m, { 0, 0 } );
@@ -57,6 +57,8 @@ int main ( )
     for ( ; rootId < n && ! root [ rootId ] ; ++rootId );
 
     std::cout << cooking ( recipe, rootId );
+
+    delete [ ] root;
 
     delete [ ] recipe;
 
