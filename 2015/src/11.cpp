@@ -6,7 +6,7 @@ static const char WAY = '.';
 static const char BEGIN = 'd';
 static const char END = 'a';
 
-struct Node
+struct __attribute__ ( ( __packed__ ) ) Node
 {
     int32_t mdst;
     char mtype;
