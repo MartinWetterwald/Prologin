@@ -15,7 +15,6 @@ int main ( )
         uint16_t j;
         std::cin >> j >> std::skipws;
         graph [ i ].insert ( j );
-        graph [ j ].insert ( i );
     }
 
     delete [ ] graph;
