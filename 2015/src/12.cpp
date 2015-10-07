@@ -20,6 +20,20 @@ void findRoot ( USetPair * graph, uint32_t * visited, uint16_t node, uint16_t & 
     }
 }
 
+void archeMinus ( USetPair * graph, uint32_t * visited, uint16_t node, uint16_t * pSize, uint16_t * size1, uint16_t * size2 )
+{
+    if ( ! ( visited [ node / BLOCK_SIZE ] & ( 1 << ( node % BLOCK_SIZE ) ) ) )
+    {
+        ++( * pSize );
+        pSize = ( pSize == size1 ) ? size2 : size1;
+        visited [ node / BLOCK_SIZE ] |= ( 1 << ( node % BLOCK_SIZE ) );
+        for ( const auto & neighbor : graph [ node ].second )
+        {
+            archeMinus ( graph, visited, neighbor, pSize, size1, size2 );
+        }
+    }
+}
+
 int main ( )
 {
     uint16_t n;
@@ -37,6 +51,21 @@ int main ( )
         std::cin >> j >> std::skipws;
         graph [ i ].first.insert ( j );
         graph [ j ].second.insert ( i );
+    }
+
+    uint16_t root = 0, size1 = 0, size2 = 0;
+    findRoot ( graph, visited, 0, root );
+
+    std::fill ( visited, visited + visitedSize, 0 );
+    archeMinus ( graph, visited, root, &size1, &size1, &size2 );
+
+    if ( size1 > size2 )
+    {
+        std::cout << size1;
+    }
+    else
+    {
+        std::cout << size2;
     }
 
     delete [ ] graph;
