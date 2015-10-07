@@ -1,6 +1,5 @@
 #include <iostream>
 #include <unordered_set>
-#include <stack>
 
 typedef std::unordered_set <uint16_t> USet;
 typedef std::pair <USet, USet> USetPair;
@@ -20,16 +19,15 @@ void findRoot ( USetPair * graph, uint32_t * visited, uint16_t node, uint16_t & 
     }
 }
 
-void archeMinus ( USetPair * graph, uint32_t * visited, uint16_t node, uint16_t * pSize, uint16_t * size1, uint16_t * size2 )
+void archeMinus ( USetPair * graph, uint32_t * visited, uint16_t node, uint16_t & size1, uint16_t & size2 )
 {
     if ( ! ( visited [ node / BLOCK_SIZE ] & ( 1 << ( node % BLOCK_SIZE ) ) ) )
     {
-        ++( * pSize );
-        pSize = ( pSize == size1 ) ? size2 : size1;
+        ++size1;
         visited [ node / BLOCK_SIZE ] |= ( 1 << ( node % BLOCK_SIZE ) );
         for ( const auto & neighbor : graph [ node ].second )
         {
-            archeMinus ( graph, visited, neighbor, pSize, size1, size2 );
+            archeMinus ( graph, visited, neighbor, size2, size1 );
         }
     }
 }
@@ -57,7 +55,7 @@ int main ( )
     findRoot ( graph, visited, 0, root );
 
     std::fill ( visited, visited + visitedSize, 0 );
-    archeMinus ( graph, visited, root, &size1, &size1, &size2 );
+    archeMinus ( graph, visited, root, size1, size2 );
 
     if ( size1 > size2 )
     {
