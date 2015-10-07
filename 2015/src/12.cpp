@@ -39,7 +39,7 @@ int main ( )
     uint16_t n;
     std::cin >> n >> std::skipws;
 
-    uint8_t visitedSize = 1 + n / BLOCK_SIZE;
+    uint16_t visitedSize = 1 + n / BLOCK_SIZE;
     uint32_t * visited = new uint32_t [ visitedSize ];
     std::fill ( visited, visited + visitedSize, 0 );
 
